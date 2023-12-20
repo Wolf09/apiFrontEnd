@@ -1,3 +1,6 @@
 .hero{
     width: 80vw;
 }
+li{
+    cursor: pointer;
+}

@@ -1,4 +1,5 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, Renderer2, ViewChild } from '@angular/core';
+import { Bitacora } from 'src/app/model/dto/bitacora';
 import { Heroe } from 'src/app/model/interfaces/heroe.interface';
 import { HeroeService } from 'src/app/model/services/heroe.service';
 
@@ -8,18 +9,71 @@ import { HeroeService } from 'src/app/model/services/heroe.service';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent {
+  
+  @ViewChild('mostrarHero')
+  public divHero: ElementRef<HTMLDivElement>;
+  public bandera:boolean=false;
+  public misHeroes:Heroe[]=[];
+  public miHero:Heroe;
+  miBitacora:Bitacora= new Bitacora();
+  private bitacoraCreada:Bitacora;
 
-  @ViewChild('imgActual')
-  public imgActual!: ElementRef<HTMLImageElement>;
 
-  private aux:string= 'https://gateway.marvel.com:443/v1/public/characters?apikey=f2d24302a91eb25d672fd1967f9e52d4&ts=Wed Nov 29 2023 16:09:36 GMT-0400 (hora de Bolivia)&hash=5c1d3d1e5c7bab1759046dee46cd850b';
-
-  constructor(private heroeService:HeroeService){}
-
-  get heroes():Heroe[]{
-    console.log(this.heroeService.heroeList);
-    return this.heroeService.heroeList;
+  constructor(private heroeService:HeroeService){
+    
   }
+
+  ngOnInit(): void {
+    
+    this.obtenerHeroes();
+    
+  }
+
+
+  private obtenerHeroes(){
+    
+    this.heroeService.todosLosHeroes()
+    .subscribe(resp =>{
+      resp.map(resp=>{
+                   resp.thumbnail.path=resp.thumbnail.path+'.'+resp.thumbnail.extension;
+          });
+          this.misHeroes=resp;
+          this.miBitacora.metodo="todosLosHeroes()";
+          if(sessionStorage.getItem('mac')){
+            this.miBitacora.usuario=this.heroeService.mac;
+          }  
+          this.crearBitacora(this.miBitacora);
+          
+    });
+    
+    
+
+  }
+
+  private crearBitacora(bitacora:Bitacora){
+      this.heroeService.crearBitacora(bitacora)
+      .subscribe(resp=>{
+          this.bitacoraCreada=resp;
+          this.heroeService.agregarBitacora(this.bitacoraCreada);
+      });
+  }
+
+  public miBandera(miId:number):void{
+    this.heroeService.heroePorId(miId)
+    .subscribe(resp =>{
+          this.miHero=resp;
+          this.miHero.thumbnail.path=this.miHero.thumbnail.path+"."+this.miHero.thumbnail.extension;  
+          this.miBitacora.metodo="heroePorId()";
+          if(sessionStorage.getItem('mac')){
+            this.miBitacora.usuario=this.heroeService.mac;
+          }  
+    
+          this.crearBitacora(this.miBitacora); 
+          this.bandera=true;
+    });
+    
+  }
+
 
 
 }

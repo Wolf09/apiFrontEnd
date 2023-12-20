@@ -1,30 +1,87 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Heroe } from '../interfaces/heroe.interface';
+import { Observable, catchError, of } from 'rxjs';
+import { Mac } from '../interfaces/mac.interface';
+import { Bitacora } from '../dto/bitacora';
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class HeroeService {
 
-  public heroeList: Heroe[]=[];
-  private url2:string= 'https://gateway.marvel.com:443/v1/public/characters?apikey=f2d24302a91eb25d672fd1967f9e52d4&ts=Wed Nov 29 2023 16:09:36 GMT-0400 (hora de Bolivia)&hash=5c1d3d1e5c7bab1759046dee46cd850b';
   private url:string='http://localhost:8080';
-  private num:number=1011334;
+  private misBitacoras: Bitacora[]=[];
+  public mac:string='';
   constructor(private http: HttpClient) {
-    this.todosLosHeroes();
-   }
+    this.obtenerMac();
+  }
 
-  todosLosHeroes():void{
-    this.http.get<Heroe[]>(`${this.url}/heroes`)
-    .subscribe(resp =>{
-        resp.map(resp=>{
-            resp.thumbnail.path=resp.thumbnail.path+'.'+resp.thumbnail.extension;
-        })
-        this.heroeList=resp;
-    });
+
+  todosLosHeroes():Observable<Heroe[]>{
+    return this.http.get<Heroe[]>(`${this.url}/heroes`)
+            .pipe(
+              catchError(err =>{
+                throw 'Error: '+err;
+              })
+            );
+  }
+
+  heroePorId(idHeroe:number):Observable<Heroe>{
+    return this.http.get<Heroe>(`${this.url}/heroe/${idHeroe}`)
+            .pipe(
+              catchError(err =>{
+                throw 'Error: '+err;
+              })
+            );
+  }
+
+  
+  agregarBitacora(bita:Bitacora):void{
+      this.misBitacoras.push(bita);
 
   }
-  
+  get _misBitacoras(){
+    return [...this.misBitacoras];
+  }
+
+  obtenerMac():void{
+    this.http.get<Mac>(`${this.url}/mac`)
+      .pipe(
+        catchError(err =>{
+          throw 'Error: '+err;
+        })
+      )
+      .subscribe(resp =>{
+        this.mac=resp.miMac;
+        sessionStorage.setItem('mac',this.mac);
+        this.obtenerBitacoras(this.mac);
+    });
+  }
+
+  crearBitacora(bitacora:Bitacora):Observable<Bitacora>{
+      return this.http.post<Bitacora>(`${this.url}/bitacoras/crear`,bitacora)
+      .pipe(
+        catchError(err =>{
+          throw 'Error: '+err;
+        })
+      );
+  }
+
+  obtenerBitacoras(user:string):void{
+      this.http.get<Bitacora[]>(`${this.url}/bitacoras/${user}`)
+      .pipe(
+        catchError(err =>{
+          throw 'Error: '+err;
+        })
+      )
+      .subscribe(resp=>{
+        this.misBitacoras=resp;
+      });
+  }
+
+
+ 
 
 }

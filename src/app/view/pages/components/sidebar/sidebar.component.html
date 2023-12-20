@@ -2,8 +2,11 @@
     <h3 class="text-light">Bitacora de Consultas</h3>
     <hr class="text-light">
     <div class="list-group">
-        <li class="list-group-item list-group-item-action">Text</li>
-        <li class="list-group-item list-group-item-action">Disabled item</li>
+        <li *ngFor="let bitacora of bitas" class="list-group-item list-group-item-action">
+            Bitacora: {{bitacora.bitacora}}
+            <p>Metodo: {{bitacora.metodo}}</p>
+
+        </li>
 
 
     </div>

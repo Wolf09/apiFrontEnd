@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { HeroeService } from './model/services/heroe.service';
 
 @Component({
   selector: 'app-root',
@@ -6,5 +7,6 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'apiFrontend';
+  title:string = 'apiFrontend';
+
 }
